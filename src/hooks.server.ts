@@ -1,0 +1,20 @@
+import { createSupabaseServerClient } from "$lib/server/supabase-server";
+import type { Handle } from "@sveltejs/kit";
+
+export const handle: Handle = async ({ event, resolve }) => {
+	const supabase = createSupabaseServerClient(event.cookies);
+
+	event.locals.supabase = supabase;
+
+	const {
+		data: { session }
+	} = await supabase.auth.getSession();
+
+	event.locals.session = session;
+
+	return resolve(event, {
+		filterSerializedResponseHeaders(name) {
+			return name === 'content-range' || name === 'x-supabase-api-version'
+		}
+	})
+}
